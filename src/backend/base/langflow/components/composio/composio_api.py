@@ -2,8 +2,6 @@
 from collections.abc import Sequence
 from typing import Any
 
-from composio import Action, App
-
 # Third-party imports
 from composio_langchain import ComposioToolSet
 from langchain_core.tools import Tool
@@ -20,6 +18,16 @@ from langflow.io import Output
 
 # TODO: We get the list from the API but we need to filter it
 enabled_tools = ["confluence", "discord", "dropbox", "github", "gmail", "linkedin", "notion", "slack", "youtube"]
+
+
+def get_composio_imports():
+    """Get composio imports with fallback."""
+    try:
+        from composio import Action, App
+        return Action, App
+    except ImportError:
+        # Fallback for when Action is not available
+        return None, None
 
 
 class ComposioAPIComponent(LCToolComponent):
@@ -93,39 +101,42 @@ class ComposioAPIComponent(LCToolComponent):
         # Get the index of the selected tool in the list of options
         selected_tool_index = next(
             (
-                ind
-                for ind, tool in enumerate(build_config["tool_name"]["options"])
-                if tool["name"] == field_value
-                or ("validate" in field_value and tool["name"] == field_value["validate"])
+                index
+                for index, option in enumerate(build_config.get("tool_name", {}).get("options", []))
+                if option.get("name") == field_value
             ),
             None,
         )
-
-        # Set the link to be the text 'validated'
-        build_config["tool_name"]["options"][selected_tool_index]["link"] = "validated"
 
         # Set the helper text and helper text metadata field of the actions now
         build_config["actions"]["helper_text"] = ""
         build_config["actions"]["helper_text_metadata"] = {"icon": "Check", "variant": "success"}
 
         # Get the list of actions available
-        all_actions = list(Action.all())
-        authenticated_actions = sorted(
-            [
-                action
-                for action in all_actions
-                if action.app.lower() in list(connected_app_names) and action.app.lower() == self.tool_name.lower()
-            ],
-            key=lambda x: x.name,
-        )
+        Action, App = get_composio_imports()
+        if Action is not None:
+            all_actions = list(Action.all())
+            authenticated_actions = sorted(
+                [
+                    action
+                    for action in all_actions
+                    if action.app.lower() in list(connected_app_names) and action.app.lower() == self.tool_name.lower()
+                ],
+                key=lambda x: x.name,
+            )
 
-        # Return the list of action names
-        build_config["actions"]["options"] = [
-            {
-                "name": self.sanitize_action_name(action.name),
-            }
-            for action in authenticated_actions
-        ]
+            # Return the list of action names
+            build_config["actions"]["options"] = [
+                {
+                    "name": self.sanitize_action_name(action.name),
+                }
+                for action in authenticated_actions
+            ]
+        else:
+            # Fallback when Action is not available
+            build_config["actions"]["options"] = []
+            build_config["actions"]["helper_text"] = "Action class not available in current composio version"
+            build_config["actions"]["helper_text_metadata"] = {"icon": "AlertTriangle", "variant": "destructive"}
 
         # Lastly, we need to show the actions field
         build_config["actions"]["show"] = True

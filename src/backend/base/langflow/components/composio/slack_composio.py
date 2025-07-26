@@ -1,9 +1,8 @@
+import json
 from typing import Any
 
-from composio import Action
-
 from langflow.base.composio.composio_base import ComposioBaseComponent
-from langflow.inputs import (
+from langflow.inputs.inputs import (
     BoolInput,
     IntInput,
     MessageTextInput,
