@@ -1,0 +1,32 @@
+services:
+  langflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "7860:80"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://langflow:langflow@postgres:5432/langflow
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: langflow
+      POSTGRES_PASSWORD: langflow
+      POSTGRES_DB: langflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

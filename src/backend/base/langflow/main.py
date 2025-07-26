@@ -371,6 +371,15 @@ def create_app():
     app.include_router(health_check_router)
     app.include_router(log_router)
 
+    # DEBUG: Print all registered routes and methods
+    for route in app.routes:
+        print(f"ROUTE: {route.path} METHODS: {getattr(route, 'methods', None)}")
+
+    # DEBUG: List all registered routes
+    @app.get("/debug/routes")
+    async def debug_routes():
+        return [route.path for route in app.routes]
+
     @app.exception_handler(Exception)
     async def exception_handler(_request: Request, exc: Exception):
         if isinstance(exc, HTTPException):
@@ -446,6 +455,7 @@ def setup_app(static_files_dir: Path | None = None, *, backend_only: bool = Fals
         raise RuntimeError(msg)
     app = create_app()
 
+    # Restore static files mount for frontend
     if not backend_only and static_files_dir is not None:
         setup_static_files(app, static_files_dir)
     return app

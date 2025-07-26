@@ -51,7 +51,36 @@ For more information about installing Langflow, including Docker and Desktop opt
 
 ## 📦 Deployment
 
-Langflow is completely open source and you can deploy it to all major deployment clouds. To learn how to use Docker to deploy Langflow, see the [Docker deployment guide](https://docs.langflow.org/deployment-docker).
+Langflow is completely open source and you can deploy it to all major deployment clouds. 
+
+### Docker Deployment
+
+For Docker deployment, see the [Docker deployment guide](./docker/README.md) in the `docker/` folder.
+
+#### Quick Docker Start
+
+```bash
+# Navigate to docker directory
+cd docker
+
+# Build and run
+docker compose up --build
+
+# Access at http://localhost:7860
+```
+
+The `docker/` folder contains:
+- `Dockerfile` - Multi-stage Docker build
+- `docker-compose.yml` - Docker Compose configuration  
+- `nginx.conf` - Nginx reverse proxy configuration
+- `start.sh` - Container startup script
+- `README.md` - Docker deployment documentation
+
+Note: `.dockerignore` is located in the project root directory.
+
+### Other Deployment Options
+
+To learn about other deployment options, see [Install Langflow](https://docs.langflow.org/get-started-installation).
 
 ## ⭐ Stay up-to-date
 
